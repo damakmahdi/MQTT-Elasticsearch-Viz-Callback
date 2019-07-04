@@ -1,0 +1,206 @@
+<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Copyright (c) Damak Mahdi.
+  Github.com/damakmahdi
+  damakmahdi2012@gmail.com
+  linkedin.com/in/mahdi-damak-400a3b14a/
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div class="chart-container" style="position: absolute; height:300px; width:600px">
+    <canvas id="chart0"></canvas>
+    <p>REFRESHES EVERY 2 SECONDS</p>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <canvas id="chart1"></canvas>
+    <p>REFRESHES EVERY 5 SECONDS</p>
+
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.15.1/moment.min.js"></script>
+<script src="https://playground.abysscorp.org/chartjs/livecharts/dist/Chart.min.js"></script>
+<script >
+    let colors = {
+        red: 'rgb(255, 99, 132)',
+        orange: 'rgb(255, 159, 64)',
+        yellow: 'rgb(255, 205, 86)',
+        green: 'rgb(75, 192, 192)',
+        blue: 'rgb(54, 162, 235)',
+        purple: 'rgb(153, 102, 255)',
+        grey: 'rgb(201, 203, 207)'
+    };
+    let ardgvalues2 = [];
+    let ardgvalues5 = [];
+    function addEmptyValues(arr, n,ms) {
+        for(let i = 0; i < n; i++) {
+            arr.push({
+                x: moment().subtract(ms, 'milliseconds').toDate(),
+                y: null
+            });
+        }
+    }
+    function updateCharts(){
+        charts.forEach(function(chart) {
+            chart.update();
+        });
+    }
+ch0=new Chart(document.getElementById("chart0").getContext('2d'), {
+    type: 'line',
+    data: {
+        //labels: labels,
+        datasets: [{
+            label: 'Data',
+            data: ardgvalues2,
+            borderColor: 'rgb(75, 192, 192)',
+            borderWidth: 3,
+            lineTension: 0.35,
+            pointRadius: 2
+        }]},
+    options: {
+        responsive: true,
+        legend: true,
+        scales: {
+            xAxes: [{
+                type: "time",
+                display: false
+            }],
+            yAxes: [{
+                display: true,
+                min:0
+            }]}}});
+    ch1=new Chart(document.getElementById("chart1").getContext('2d'), {
+        type: 'line',
+        data: {
+            //labels: labels,
+            datasets: [{
+                label: 'Data',
+                data: ardgvalues5,
+                borderColor: 'rgb(75, 192, 192)',
+                borderWidth: 3,
+                lineTension: 0.35,
+                pointRadius: 2
+            }]},
+        options: {
+            responsive: true,
+            legend: true,
+            scales: {
+                xAxes: [{
+                    type: "time",
+                    display: false
+                }],
+                yAxes: [{
+                    display: true,
+                    min:0
+                }]}}});
+    function initialize() {
+        charts.push(ch0);
+        charts.push(ch1);
+    }
+
+    let charts = [];
+
+    class WebSocketClient {
+
+        constructor(protocol, hostname, port, endpoint) {
+
+            this.webSocket = null;
+
+            this.protocol = protocol;
+            this.hostname = hostname;
+            this.port     = port;
+            this.endpoint = endpoint;
+        }
+
+        getServerUrl() {
+            return this.protocol + "://" + this.hostname + ":" + this.port + this.endpoint;
+        }
+
+        connect() {
+            try {
+                this.webSocket = new WebSocket(this.getServerUrl());
+                //  WebSocket event handlers!
+                this.webSocket.onopen = function(event) {
+                    initialize();
+                    addEmptyValues(ardgvalues2,9,0);
+                    addEmptyValues(ardgvalues5,24,0);
+                    console.log('onopen::' + JSON.stringify(event, null, 4));
+                }
+
+                this.webSocket.onmessage = function(event) {
+
+                    let fullmsg = event.data;
+                    let msg5=fullmsg;
+                    let msg2=fullmsg;
+
+                    if (fullmsg.substring(fullmsg.indexOf(" ")+1,fullmsg.indexOf(" ")+9)==="2seconds") {
+
+                        ardgvalues2.push({
+                            x: new Date(),
+                            y: msg2.substring(0,msg2.indexOf(" "))
+                        });
+                        console.log('onmessage::' + JSON.stringify(msg2.substring(0,msg2.indexOf(" ")))+" Intervalle : 2 secondes" );
+                       updateCharts();
+                        ardgvalues2.shift();
+                        updateCharts();
+
+                    }
+
+                    else if (fullmsg.substring(fullmsg.indexOf(" ")+1,fullmsg.indexOf(" ")+9)==="5seconds" ){
+                        ardgvalues5.push({
+                            x: new Date(),
+                            y:  msg5.substring(0,msg5.indexOf(" "))
+                        });
+                        console.log('onmessage::' + JSON.stringify(msg5.substring(0,msg5.indexOf(" ")))+" Intervalle : 5 secondes" );
+                        updateCharts();
+                        ardgvalues5.shift();
+                        updateCharts();
+
+                    }
+                }
+                this.webSocket.onclose = function(event) {
+                    console.log('onclose::' + JSON.stringify(event, null, 4));
+                }
+                this.webSocket.onerror = function(event) {
+                    console.log('onerror::' + JSON.stringify(event, null, 4));
+                }
+
+            } catch (exception) {
+
+                console.error(exception);
+            }
+        }
+
+        getStatus() {
+            return this.webSocket.readyState;
+        }
+        send(message) {
+
+            if (this.webSocket.readyState == WebSocket.OPEN) {
+                this.webSocket.send(message);
+
+            } else {
+                console.error('webSocket is not open. readyState=' + this.webSocket.readyState);
+            }
+        }
+        disconnect() {
+            if (this.webSocket.readyState == WebSocket.OPEN) {
+                this.webSocket.close();
+
+            } else {
+                console.error('webSocket is not open. readyState=' + this.webSocket.readyState);
+            }
+        }
+    }
+    var client = new WebSocketClient('ws', 'localhost', 8080, '/SimpleServlet_WAR/socket?push=Stream');
+    client.connect();
+
+</script>
+</body>
+</html>

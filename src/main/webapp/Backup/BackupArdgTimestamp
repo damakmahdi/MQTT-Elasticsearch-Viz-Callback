@@ -1,0 +1,13 @@
+var ardgts;
+ardgtsFunction = function () {
+
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) {
+            var myObj = JSON.parse(this.responseText);
+            ardgts = myObj;
+            //document.getElementById("t").innerHTML = ardgts;
+        }};
+    xmlhttp.open("GET", "/SimpleServlet_war/ardgtimestamps", true);
+    xmlhttp.send();};
+

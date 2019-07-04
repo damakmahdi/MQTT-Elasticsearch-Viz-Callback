@@ -1,0 +1,22 @@
+package com.mahdi;
+
+public class Measure {
+    public Long TIMESTAMP;
+    public double VALUE;
+
+    public Long getTIMESTAMP() {
+        return TIMESTAMP;
+    }
+
+    public void setTIMESTAMP(Long TIMESTAMP) {
+        this.TIMESTAMP = TIMESTAMP;
+    }
+
+    public double getVALUE() {
+        return VALUE;
+    }
+
+    public void setVALUE(double VALUE) {
+        this.VALUE = VALUE;
+    }
+}

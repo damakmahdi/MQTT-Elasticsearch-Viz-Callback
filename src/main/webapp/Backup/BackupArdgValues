@@ -1,0 +1,15 @@
+var ardgvals;
+ardgvalsFunction = function () {
+
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) {
+            var myObj = JSON.parse(this.responseText);
+            ardgvals = myObj;
+            //document.getElementById("v").innerHTML = ardgvals;
+        }};
+    xmlhttp.open("GET", "/SimpleServlet_war/ardgvalues", true);
+    xmlhttp.send();
+};
+
+

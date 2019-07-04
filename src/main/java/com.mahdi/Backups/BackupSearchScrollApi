@@ -1,0 +1,138 @@
+package com.mahdi;
+import com.google.gson.Gson;
+import org.apache.http.HttpHost;
+import org.elasticsearch.action.search.*;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.Scroll;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
+import java.io.IOException;
+import java.util.*;
+
+public class SearchScrollApiTest {
+    public ArrayList<Long> ardgTimestamps = new ArrayList<>();
+    public ArrayList<Double> ardgValues = new ArrayList<>();
+    public ArrayList<Long> peakTimestamps = new ArrayList<>();
+    public ArrayList<Double> peakValues = new ArrayList<>();
+
+    /*
+##########################################################
+    Getters and Setters
+##########################################################
+*/
+
+    public ArrayList<Long> getArdgTimestamps() {
+        return ardgTimestamps;
+    }
+
+    public void setArdgTimestamps(ArrayList<Long> ardgTimestamps) {
+        this.ardgTimestamps = ardgTimestamps;
+    }
+
+    public ArrayList<Double> getArdgValues() {
+        return ardgValues;
+    }
+
+    public void setArdgValues(ArrayList<Double> ardgValues) {
+        this.ardgValues = ardgValues;
+    }
+
+    public ArrayList<Long> getPeakTimestamps() { return peakTimestamps; }
+
+    public void setPeakTimestamps(ArrayList<Long> peakTimestamps) { this.peakTimestamps = peakTimestamps; }
+
+    public ArrayList<Double> getPeakValues() { return peakValues; }
+
+    public void setPeakValues(ArrayList<Double> peakValues) { this.peakValues = peakValues; }
+
+    /*
+        ##########################################################
+            retrieve current Ardgetti data and dataset
+        ##########################################################
+        */
+
+    //ARDGETTI
+    public void getCurrentArdgettiData() {
+
+        try {
+            try (final RestHighLevelClient client = new RestHighLevelClient(
+                    RestClient.builder(
+                            new HttpHost("localhost", 9200, "http")))) {
+                final Scroll scroll = new Scroll(TimeValue.timeValueMinutes(2));
+                final SearchSourceBuilder builder = new SearchSourceBuilder()
+                        .query(QueryBuilders.matchAllQuery())
+                        .size(10000);
+                final SearchRequest requestardg = new SearchRequest("ardgettipower").scroll(scroll)
+                        .source(builder);
+                SearchResponse responseardg = client.search(requestardg, RequestOptions.DEFAULT);
+                String scrollIdardg = responseardg.getScrollId();
+                SearchHit[] hitsardg = responseardg.getHits().getHits();
+                while (hitsardg != null && hitsardg.length > 0) {
+                    final SearchScrollRequest scrollRequest = new SearchScrollRequest(scrollIdardg)
+                            .scroll(scroll);
+                    responseardg = client.searchScroll(scrollRequest, RequestOptions.DEFAULT);
+                    scrollIdardg = responseardg.getScrollId();
+                    hitsardg = responseardg.getHits().getHits();
+
+                    for (final SearchHit hit : hitsardg) {
+                        ardgTimestamps.add((Long) hit.getSourceAsMap().get("timestamp"));
+                        ardgValues.add((Double) hit.getSourceAsMap().get("value"));
+                    }
+                }
+                final ClearScrollRequest clearScrollRequest = new ClearScrollRequest();
+                clearScrollRequest.addScrollId(scrollIdardg);
+                final ClearScrollResponse clearScrollResponse = client.clearScroll(clearScrollRequest, RequestOptions.DEFAULT);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+
+
+    // PEAKTECH
+        public void getCurrentPeaktechData () {
+
+            try {
+                try (final RestHighLevelClient client = new RestHighLevelClient(
+                        RestClient.builder(
+                                new HttpHost("localhost", 9200, "http")))) {
+                    final Scroll scroll = new Scroll(TimeValue.timeValueMinutes(2));
+                    final SearchSourceBuilder builder = new SearchSourceBuilder()
+                            .query(QueryBuilders.matchAllQuery())
+                            .size(10000);
+                    final SearchRequest requestpeak = new SearchRequest("peaktechpower").scroll(scroll)
+                            .source(builder);
+                    SearchResponse responsepeak = client.search(requestpeak, RequestOptions.DEFAULT);
+                    String scrollIdpeak = responsepeak.getScrollId();
+                    SearchHit[] hitspeak = responsepeak.getHits().getHits();
+                    while (hitspeak != null && hitspeak.length > 0) {
+                        final SearchScrollRequest scrollRequest = new SearchScrollRequest(scrollIdpeak)
+                                .scroll(scroll);
+                        responsepeak = client.searchScroll(scrollRequest, RequestOptions.DEFAULT);
+                        scrollIdpeak = responsepeak.getScrollId();
+                        hitspeak = responsepeak.getHits().getHits();
+
+                        for (final SearchHit hit : hitspeak) {
+                            peakTimestamps.add((Long) hit.getSourceAsMap().get("timestamp"));
+                            peakValues.add((Double) hit.getSourceAsMap().get("value"));
+                        }
+                    }
+                    final ClearScrollRequest clearScrollRequest = new ClearScrollRequest();
+                    clearScrollRequest.addScrollId(scrollIdpeak);
+                    final ClearScrollResponse clearScrollResponse = client.clearScroll(clearScrollRequest, RequestOptions.DEFAULT);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
+
+
+
+}

@@ -1,0 +1,242 @@
+<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Copyright (c) Damak Mahdi.
+  Github.com/damakmahdi
+  damakmahdi2012@gmail.com
+  linkedin.com/in/mahdi-damak-400a3b14a/
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+
+<html>
+<body>
+<div class="chart-container" style="position: absolute; height:300px; width:600px">
+    <canvas id="chart0"></canvas>
+    <p id="statsArdg" style="color: blue"> </p>
+
+    <br/>
+    <canvas id="chart1"></canvas>
+    <p id="statsPeak" style="color: red"></p>
+
+
+</div>
+
+
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.15.1/moment.min.js"></script>
+<script src="https://playground.abysscorp.org/chartjs/livecharts/dist/Chart.min.js"></script>
+<script src="Scripts/peakData.js"></script>
+<script src="Scripts/ardgData.js"></script>
+<script>
+
+    /*
+    Colors that will be used during the implementation of the charts
+     */
+    let colors = {
+        red: 'rgb(255, 99, 132)',
+        orange: 'rgb(255, 159, 64)',
+        yellow: 'rgb(255, 205, 86)',
+        green: 'rgb(75, 192, 192)',
+        blue: 'rgb(54, 162, 235)',
+        purple: 'rgb(153, 102, 255)',
+        grey: 'rgb(201, 203, 207)'
+    };
+
+
+    let ardgfirst=[];
+    let peakfirst=[];
+    let samples = 10;
+    let speed = 500;
+    let timeout = samples * speed;
+    let ardgvalues = [];
+    let peakvalues = [];
+    let labels = [];
+    let charts = [];
+    let val = 0;
+    let val1 = 0;
+    let scale = 1;
+    let v1 = 0;
+    let v = 0;
+    /*
+    First call of ardgDataFunction and peakDataFunction in order to get last
+    Data from elasticsearch (5s interval)
+    These calls happen only in the launch of the application to avoid null values.
+     */
+    ardgDataFunction();
+    peakDataFunction();
+
+    /*
+    These functions pullArdg and pullPeak send the elements collected from elasticsearch one by one to the Chart
+    getardgData and getpeakData are two lists that contain the last items in a 5-second-interval,
+    everytime the ardgDataFunction/peakDataFunction are called, the two lists elements refresh.
+    After several Tests, the safest and the most reliable option is to refresh the lists when each one
+    of the them contains at most 1 element
+    Also, sometimes a same value can occur two times in a row
+    if the next element doesn't manage to arrive from the Web server which is a problem
+    from Tomcat.
+     */
+    var pullArdg = function() {
+        if (getardgData.length<2 || getardgData==null ){ardgDataFunction();}
+        v = JSON.stringify(getardgData[0]['VALUE']);
+        ardgfirst.push(v);
+        if (getardgData.length>1){getardgData.shift();}
+    }
+    var pullPeak = function() {
+        if ( getpeakData.length<2){peakDataFunction(); }
+
+        v1 = JSON.stringify(getpeakData[0]['VALUE']);
+        peakfirst.push(v1);
+        if (getpeakData.length>1){getpeakData.shift();}
+    }
+
+    /*
+    Adding some empty values to the chart at t=0
+    While we are working with a 5s interval, and assuming that in 5s we can recieve up to 25
+    ardgetti measures, and 17 in other side(peaktech), so we have decided to start the two charts with
+    25 and 17 respectively.
+    */
+    addEmptyValues(ardgvalues,25,0);
+    addEmptyValues(peakvalues, 17,0);
+
+    /*
+    The chart initializer which contains empty values, to be shown at the launch of the application,
+    and loaded with data just after 3 seconds and a half from the launch
+     */
+
+    function initialize() {
+        charts.push(new Chart(document.getElementById("chart0").getContext('2d'), {
+            type: 'line',
+            data: {
+                //labels: labels,
+                datasets: [{
+                    label: 'Ardgetti',
+                    data: ardgvalues,
+                    borderColor: 'rgb(75, 192, 192)',
+                    borderWidth: 3,
+                    lineTension: 0.35,
+                    pointRadius: 2
+                }]},
+            options: {
+                responsive: true,
+                legend: true,
+                scales: {
+                    xAxes: [{
+                        type: "time",
+                        display: false
+                    }],
+                    yAxes: [{
+                        display: true,
+                        min:0
+                    }]}}}))
+
+        ;
+
+        charts.push(new Chart(document.getElementById("chart1").getContext('2d'), {
+            type: 'line',
+            data: {
+                //labels: labels,
+                datasets: [ {
+                    label: 'Peaktech',
+                    data: peakvalues,
+                    borderColor: 'rgb(71, 102, 122)',
+                    borderWidth: 3,
+                    lineTension: 0.35,
+                    pointRadius: 2
+                }]},
+            options: {
+                responsive: true,
+                legend: true,
+                scales: {
+                    xAxes: [{
+                        type: "time",
+                        display: false
+                    }],
+                    yAxes: [{
+                        display: true,
+                        min:0
+                    }]}}}))
+
+        ;
+    }
+
+
+    /*
+    This function adds some empty values containing just current timestamps
+     */
+    function addEmptyValues(arr, n,ms) {
+        for(let i = 0; i < n; i++) {
+            arr.push({
+                x: moment().subtract(ms, 'milliseconds').toDate(),
+                y: null
+            });
+        }
+    }
+
+    function updateCharts(){
+        charts.forEach(function(chart) {
+            chart.update();
+        });
+    }
+
+    /*
+    This function calls the pull() function in order to send data to the Chart.
+    It sends data one by one and not as an array.
+     */
+    function progressArdg() {
+        pullArdg();
+        val = ardgfirst[0];
+        //console.log('ardg= '+getardgData.length);
+        ardgfirst.shift();
+        ardgvalues.push({
+            x: new Date(),
+            y: val
+        });
+        ardgvalues.shift();
+    }
+    function progressPeak() {
+        pullPeak();
+        val1 = peakfirst[0];
+        //console.log('peak= '+getpeakData.length);
+        peakfirst.shift();
+        peakvalues.push({
+            x: new Date(),
+            y: val1
+        });
+        peakvalues.shift();
+    }
+/*
+This recurrent method auto calls itself every 350 ms.
+It's the most important method that calls all the other methods already implemented,
+ */
+    function advanceArdg() {
+        if (ardgvalues[0] != null && scale < 4) {
+            updateCharts();
+        }
+        progressArdg();
+        updateCharts();
+        setTimeout(function() {
+            requestAnimationFrame(advanceArdg);
+        }, 350);
+    }
+    function advancePeak() {
+        if ( peakvalues[0]!=null && scale < 4) {
+            updateCharts();
+        }
+        progressPeak();
+        updateCharts();
+        setTimeout(function() {
+            requestAnimationFrame(advancePeak);
+        }, 375);
+    }
+
+        initialize();
+
+    /*
+    For stability measures, the advance Function will be called 3.5 seconds after the launch of the application
+    in order the be sure 100% that data would arrive. Otherwise, there would be a possiblity that the Chart
+    maintains empty.
+     */
+    setTimeout(advanceArdg,3500);
+    setTimeout(advancePeak,3500);
+</script>
+
+
+
+</html>

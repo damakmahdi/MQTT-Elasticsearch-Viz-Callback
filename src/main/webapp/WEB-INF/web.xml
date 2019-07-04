@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Copyright (c) Damak Mahdi.
+  Github.com/damakmahdi
+  damakmahdi2012@gmail.com
+  linkedin.com/in/mahdi-damak-400a3b14a/
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+
+<web-app
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://java.sun.com/xml/ns/javaee"
+        xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+        xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+        version="3.0">
+  <welcome-file-list>
+    <welcome-file>index.html</welcome-file>
+  </welcome-file-list>
+
+
+  <servlet>
+    <servlet-name>peakData</servlet-name>
+    <servlet-class>com.mahdi.WebServices.PeaktechData</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>peakData</servlet-name>
+    <url-pattern>/peakData</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>ardgData</servlet-name>
+    <servlet-class>com.mahdi.WebServices.ArdgettiData</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>ardgData</servlet-name>
+    <url-pattern>/ardgData</url-pattern>
+  </servlet-mapping>
+
+
+
+</web-app>
+

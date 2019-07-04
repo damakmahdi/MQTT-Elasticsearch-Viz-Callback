@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://java.sun.com/xml/ns/javaee"
+        xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+        xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+        version="3.0">
+  <welcome-file-list>
+    <welcome-file>index.html</welcome-file>
+  </welcome-file-list>
+
+  <servlet>
+    <servlet-name>ardgvalues</servlet-name>
+    <servlet-class>com.mahdi.Data.ArdgettiValues</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>ardgvalues</servlet-name>
+    <url-pattern>/ardgvalues</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>ardgtimestamps</servlet-name>
+    <servlet-class>com.mahdi.Data.ArdgettiTimestamps</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>ardgtimestamps</servlet-name>
+    <url-pattern>/ardgtimestamps</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>peakvalues</servlet-name>
+    <servlet-class>com.mahdi.Data.PeaktechValues</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>peakvalues</servlet-name>
+    <url-pattern>/peakvalues</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>peaktimestamps</servlet-name>
+    <servlet-class>com.mahdi.Data.PeaktechTimestamps</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>peaktimestamps</servlet-name>
+    <url-pattern>/peaktimestamps</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>peakData</servlet-name>
+    <servlet-class>com.mahdi.Data.PeaktechData</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>peakData</servlet-name>
+    <url-pattern>/peakData</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>ardgData</servlet-name>
+    <servlet-class>com.mahdi.Data.ArdgettiData</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>ardgData</servlet-name>
+    <url-pattern>/ardgData</url-pattern>
+  </servlet-mapping>
+</web-app>

@@ -1,0 +1,39 @@
+package com.mahdi.Data;
+
+import com.google.gson.Gson;
+import com.mahdi.ElasticQueries.RetrieveMeasures;
+import com.mahdi.Servlets.RetrieveServlet;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
+public class PeaktechTimestamps extends RetrieveServlet {
+
+
+
+    RetrieveMeasures r ;
+    public Gson g;
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        this.g=new Gson();
+
+    }
+
+    @Override
+    public void doGet(HttpServletRequest req, HttpServletResponse res)
+            throws ServletException, IOException
+    {
+        r= new RetrieveMeasures();
+
+        this.r.getData("peaktechpower",r.peakTimestamps,r.peakValues);
+        res.setContentType("application/json");
+        this.doWrite(r.getPeakTimestamps().subList(
+                r.getPeakTimestamps().size()-40,
+                r.getPeakTimestamps().size()
+        ),res.getWriter()); }
+
+}
+

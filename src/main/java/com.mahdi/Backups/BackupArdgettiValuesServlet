@@ -1,0 +1,36 @@
+package com.mahdi.Data;
+
+import com.google.gson.Gson;
+import com.mahdi.ElasticQueries.RetrieveMeasures;
+import com.mahdi.Servlets.RetrieveServlet;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
+public class ArdgettiValues extends RetrieveServlet {
+
+    RetrieveMeasures r ;
+    public Gson g;
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        this.g=new Gson();
+
+    }
+
+    @Override
+    public void doGet(HttpServletRequest req, HttpServletResponse res)
+            throws ServletException, IOException
+    {
+        r= new RetrieveMeasures();
+
+        this.r.getData("ardgettipower",r.ardgTimestamps,r.ardgValues);
+        res.setContentType("application/json");
+        this.doWrite(r.getArdgValues().subList(
+                r.getArdgValues().size()-40,
+                r.getArdgValues().size()
+        ),res.getWriter()); }
+
+}

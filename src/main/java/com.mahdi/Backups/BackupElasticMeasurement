@@ -1,0 +1,120 @@
+package com.mahdi.ElasticMeasurement;
+
+import org.eclipse.paho.client.mqttv3.*;
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
+
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.UUID;
+
+public class ElasticMeasurement {
+
+    private static final String BROKER = "tcp://app.icam.fr:1883";
+    private static final String TOPIC0 = "peaktech/power";
+    private static final String TOPIC = "ardgetti/1/power";
+    private static final String TOPIC1 = "ardgetti/1/factor";
+    private static final String TOPIC2 = "ardgetti/1/intensity";
+    private static final String TOPIC3 = "ardgetti/tension";
+
+    private MqttClient mqttClient;
+
+    public void setUp(String s) throws MqttException {
+        UUID uuid = UUID.randomUUID();
+        MemoryPersistence persistence = new MemoryPersistence();
+        mqttClient = new MqttClient(BROKER, uuid.toString(), persistence);
+        MqttConnectOptions options = new MqttConnectOptions();
+        options.setCleanSession(true);
+        mqttClient.connect(options);
+        mqttClient.subscribe(s, new MyMessageListener());
+    }
+
+    public void tearDown() throws MqttException {
+        mqttClient.disconnect();
+    }
+
+
+    public class MyMessageListener implements IMqttMessageListener {
+
+        //Persistence
+        float tension;
+        float power;
+        float intensity;
+        float factor;
+        int i = 0;
+        int j = 0;
+
+        @Override
+        public void messageArrived(String topic, MqttMessage message) throws Exception {
+/*
+            //mongo
+            MongoClient mongoClient = new MongoClient(new MongoClientURI("mongodb://localhost:27017"));
+            DB database = mongoClient.getDB("Measure");
+            DBCollection collection = database.getCollection("Ardgettipower");
+            //mongo
+ */
+            byte[] payload = message.getPayload();
+            String content = new String(payload);
+            Float value = Float.valueOf(content);
+            Date date = new Date();
+            long time = date.getTime();
+            Timestamp issued = new Timestamp(time);
+            //ElasticIndexing ei = new ElasticIndexing();
+            BulkIndexing bi=new BulkIndexing();
+            if (topic.equals("ardgetti/1/power")) {
+             //   ei.indexApiSyncTest("ardgettipower", value, time);
+                bi.bulkApiTest("ardgettipower",value,time);
+/*
+                DBObject mesure = new BasicDBObject()
+                        .append("timestamp",issued)
+                        .append("value", value);
+                collection.insert(mesure);
+                i+=1;
+
+ */
+            }
+            if (topic.equals("peaktech/power")) {
+               // ei.indexApiSyncTest("peaktechpower", value, time);
+                bi.bulkApiTest("peaktechpower",value,time);
+
+                /*
+                DBObject mesure = new BasicDBObject()
+                        .append("timestamp",issued)
+                        .append("value", value);
+                collection.insert(mesure);
+                j+=1;
+
+                 */
+            }
+
+            System.out.println(topic + " value= " + value + " timestamp= " + time);
+            //  System.out.println("ardgetti number "+ i +" peaktech number" + j);
+        }
+    }
+
+    public void measure() {
+        try {
+
+            long delai = System.currentTimeMillis();
+
+            this.setUp(TOPIC0);
+            this.setUp(TOPIC);
+
+		/*do { } while (delai + 2000 > System.currentTimeMillis());
+		client.tearDown();
+		System.exit(0);*/
+        } catch (MqttException e) {
+            System.out.println("reason " + e.getReasonCode());
+            System.out.println("msg " + e.getMessage());
+            System.out.println("loc " + e.getLocalizedMessage());
+            System.out.println("cause " + e.getCause());
+            System.out.println("excep " + e);
+            e.printStackTrace();
+        }
+    }
+
+    public static void main(String[] args) {
+        ElasticMeasurement em = new ElasticMeasurement();
+        em.measure();
+
+    }
+}
