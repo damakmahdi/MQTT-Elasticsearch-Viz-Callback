@@ -36,8 +36,8 @@
     <p id="test"></p>
 
 </div>
-<script src="../Scripts/peakBatch.js"></script>
-<script src="../Scripts/ardgBatch.js"></script>
+<script src="Scripts/peakBatch.js"></script>
+<script src="Scripts/ardgBatch.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.15.1/moment.min.js"></script>
 <script src="https://playground.abysscorp.org/chartjs/livecharts/dist/Chart.min.js"></script>
 <script >
@@ -67,6 +67,11 @@
             chart.update();
         });
     }
+    function updateCharts2(){
+        charts2.forEach(function(chart) {
+            chart.update();
+        });
+    }
     ch0=new Chart(document.getElementById("chart0").getContext('2d'), {
         type: 'line',
         data: {
@@ -89,7 +94,9 @@
                 }],
                 yAxes: [{
                     display: true,
-                    min:0
+                    min:0,
+                    max:60,
+                    beginAtZero:true
                 }]}}});
 
     ch1=new Chart(document.getElementById("chart1").getContext('2d'), {
@@ -114,16 +121,19 @@
                 }],
                 yAxes: [{
                     display: true,
-                    min:0
+                    min:0,
+                    max:60,
+                    beginAtZero:true
                 }]}}});
 
     function initialize() {
         charts.push(ch0);
-        charts.push(ch1);
+        charts2.push(ch1);
     }
     let msg2="";
     let tpc="peak";
     let charts = [];
+    let charts2 = [];
     let samples=10;
     class WebSocketClient {
 
@@ -165,12 +175,8 @@
                     if (values.length>samples) {
                         statvalues.shift();
                         values.shift();
-                        updateCharts();
                     }
-                    else{
-                        updateCharts();
-                    }
-
+                    updateCharts();
                 }
                 this.webSocket.onclose = function(event) {
                     console.log('onclose::' + JSON.stringify(event, null, 4));
@@ -215,7 +221,7 @@
             max=parseFloat(statvalues[0]);
             min=parseFloat(statvalues[0]);
             total += parseFloat(statvalues[i]);
-            count= samples;
+            count= statvalues.length;
             if (parseFloat(statvalues[i])>max){max=parseFloat(statvalues[i])}
             if (parseFloat(statvalues[i])<min){min=parseFloat(statvalues[i])}
         }
@@ -228,28 +234,26 @@
 
 
     function ardgBatchRefresh(){
+        while (batchvalues.length>0){batchvalues.shift();}
         ardgBatchFunction();
-        for (var i = 0, len = ardgBatch.length; i < len; i++) {
+        for (let i = 0, len = ardgBatch.length; i < len; i++) {
             batchvalues.push({
-                x: JSON.stringify(ardgBatch[i]['TIMESTAMP']),
+                x: new Date(),
                 y: JSON.stringify(ardgBatch[i]['VALUE'])
             });
-            updateCharts();
+            updateCharts2();
         }
-        updateCharts();
     }
     function peakBatchRefresh(){
-        let date=new Date();
+        while (batchvalues.length>0){batchvalues.shift();}
         peakBatchFunction();
-        for (var i = 0, len = peakBatch.length; i < len; i++) {
+        for (let i = 0, len = peakBatch.length; i < len; i++) {
             batchvalues.push({
-                x: JSON.stringify(peakBatch[i]['TIMESTAMP']),
+                x: new Date(),
                 y: JSON.stringify(peakBatch[i]['VALUE'])
             });
-            updateCharts();
-            date=date + 1000;
+            updateCharts2();
         }
-        updateCharts();
     }
     const sendButton = document.getElementById("send");
     const refreshButton = document.getElementById("refresh");
@@ -262,8 +266,8 @@
         else {
             peakBatchRefresh();
         }
-    }
-    sendButton.onclick = function (event) {
+        }
+        sendButton.onclick = function (event) {
         let time=list.value;
         client.disconnect();
         if (topic.value==="ardg"){
@@ -274,17 +278,17 @@
             //samples=(list.value)*1000/300(ms)
             samples=(time)*3;
         }
-        setInterval(stats,time*1000);
+        setInterval(stats,5000);
         tpc=topic.value;
         while (values.length>time) {
             values.shift(); statvalues.shift();
         }
-        updateCharts();
+updateCharts();
         client.connect();
     }
 
     client.connect()
-    //ardgBatchFunction();
+    ardgBatchFunction();
     peakBatchFunction();
 </script>
 </body>

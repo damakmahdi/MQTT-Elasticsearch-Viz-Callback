@@ -34,6 +34,6 @@ ardgDataFunction = function () {
             ;
         }
         };
-    xmlhttp.open("GET", "/SimpleServlet_war/ardgData", true);
+    xmlhttp.open("GET", "/SimpleServlet_WAR/ardgData", true);
     xmlhttp.send();};
 

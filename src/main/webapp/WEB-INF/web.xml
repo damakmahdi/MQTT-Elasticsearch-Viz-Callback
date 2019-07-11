@@ -13,7 +13,7 @@
         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
         version="3.0">
   <welcome-file-list>
-    <welcome-file>index.html</welcome-file>
+    <welcome-file>DynamicClient.html</welcome-file>
   </welcome-file-list>
 
 
@@ -33,6 +33,23 @@
   <servlet-mapping>
     <servlet-name>ardgData</servlet-name>
     <url-pattern>/ardgData</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>ardgBatch</servlet-name>
+    <servlet-class>com.mahdi.WebServices.ArdgettiBatch</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>ardgBatch</servlet-name>
+    <url-pattern>/ardgBatch</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <servlet-name>peakBatch</servlet-name>
+    <servlet-class>com.mahdi.WebServices.PeaktechBatch</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>peakBatch</servlet-name>
+    <url-pattern>/peakBatch</url-pattern>
   </servlet-mapping>
 
 

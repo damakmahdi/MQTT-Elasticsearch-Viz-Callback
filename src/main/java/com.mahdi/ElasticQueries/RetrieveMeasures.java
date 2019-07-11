@@ -21,7 +21,6 @@ import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.metrics.ExtendedStats;
 import org.elasticsearch.search.aggregations.metrics.ExtendedStatsAggregationBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
-
 import java.io.IOException;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
@@ -55,6 +54,63 @@ public class RetrieveMeasures {
         this.ardgList = ardgList;
     }
 
+    public void retrieveAll(String index, List<Double> list){
+        try {
+            try (final RestHighLevelClient client = new RestHighLevelClient(
+                    RestClient.builder(
+                            new HttpHost("localhost", 9200, "http")))) {
+                final Scroll scroll = new Scroll(TimeValue.timeValueMinutes(2));
+                ExtendedStatsAggregationBuilder aggregation =
+                        AggregationBuilders
+                                .extendedStats("agg")
+                                .field("value")
+                        ;
+                final SearchSourceBuilder builder = new SearchSourceBuilder()
+                        .sort("timestamp")
+                        .aggregation(aggregation)
+
+                        .size(10000);
+
+                final SearchRequest request = new SearchRequest(index).scroll(scroll)
+                        .source(builder);
+            /*
+            Decimal format 2 places #,##
+             */
+                DecimalFormat df2 = new DecimalFormat("#.##");
+                df2.setRoundingMode(RoundingMode.UP);
+
+                SearchResponse response = client.search(request, RequestOptions.DEFAULT);
+                ExtendedStats agg = response.getAggregations().get("agg");
+                stats.setMin( (agg.getMin()));
+                stats.setMax(agg.getMax());
+                stats.setAvg(agg.getAvg());
+                stats.setSum(agg.getSum()) ;
+                stats.setCount(agg.getCount());
+                stats.setStdDeviation(agg.getStdDeviation());
+                stats.setVariance(agg.getVariance());
+                //System.out.println(stats);
+
+                String scrollId = response.getScrollId();
+                SearchHit[] hits = response.getHits().getHits();
+                list.clear();
+                while (hits != null && hits.length > 0) {
+                    final SearchScrollRequest scrollRequest = new SearchScrollRequest(scrollId)
+                            .scroll(scroll);
+                    response = client.searchScroll(scrollRequest, RequestOptions.DEFAULT);
+                    scrollId = response.getScrollId();
+                    hits = response.getHits().getHits();
+                    for (final SearchHit hit : hits) {
+                        list.add( (Double)hit.getSourceAsMap().get("value"));
+                    }
+                }
+                final ClearScrollRequest clearScrollRequest = new ClearScrollRequest();
+                clearScrollRequest.addScrollId(scrollId);
+                final ClearScrollResponse clearScrollResponse = client.clearScroll(clearScrollRequest, RequestOptions.DEFAULT);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
 public void perfectRetrieve(String index, List<Measure> list,Long x,Long y){
     try {
@@ -367,10 +423,10 @@ public void perfectRetrieve(String index, List<Measure> list,Long x,Long y){
 
 
     public static void main(String[] args) {
+        List<Double> l=new ArrayList<>();
         RetrieveMeasures r = new RetrieveMeasures();
-        r.perfectRetrieve("peaktechpower",r.peakList,System.currentTimeMillis()-5000
-                , System.currentTimeMillis());
-        System.out.println(r.getPeakList().size());
+        r.retrieveAll("peaktechpower",l);
+        System.out.println(l.size());
 
     }
     }

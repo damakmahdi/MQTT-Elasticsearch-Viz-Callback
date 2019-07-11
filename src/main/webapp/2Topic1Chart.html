@@ -12,32 +12,19 @@
     <title>Title</title>
 </head>
 <body>
-<button id="send">Send</button>
+<button id="stop">Stop</button>
 
-<select id="select">
-    <option value="5">5 Secondes</option>
-    <option value="25">25 Secondes</option>
-    <option value="60">1 Minute</option>
-</select>
-<select id="topic">
-    <option value="ardg">Ardgetti</option>
-    <option value="peak">Peaktech</option>
-</select>
-<button id="refresh">Refresh</button>
+<button id="start">Resume</button>
 
-<p id="stats"></p>
+<p id="stats">ARDGETTI </p>
 <br>
+<p id="stats2">PEAKTECH </p>
 <br>
 <div class="chart-container" style="position: absolute; height:200px; width:1100px">
     <canvas id="chart0"></canvas>
     <br>
-    <canvas id="chart1"></canvas>
-    <br>
-    <p id="test"></p>
 
 </div>
-<script src="../Scripts/peakBatch.js"></script>
-<script src="../Scripts/ardgBatch.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.15.1/moment.min.js"></script>
 <script src="https://playground.abysscorp.org/chartjs/livecharts/dist/Chart.min.js"></script>
 <script >
@@ -52,16 +39,10 @@
         grey: 'rgb(201, 203, 207)'
     };
     let statvalues = [];
+    let statvalues2 = [];
     let values = [];
-    let batchvalues = [];
-    function addEmptyValues(arr, n,ms) {
-        for(let i = 0; i < n; i++) {
-            arr.push({
-                x: moment().subtract(ms, 'milliseconds').toDate(),
-                y: null
-            });
-        }
-    }
+    let values2 = [];
+
     function updateCharts(){
         charts.forEach(function(chart) {
             chart.update();
@@ -77,33 +58,16 @@
                 borderColor: 'rgb(75, 192, 192)',
                 borderWidth: 3,
                 lineTension: 0.35,
-                pointRadius: 2
-            }]},
-        options: {
-            responsive: true,
-            legend: true,
-            scales: {
-                xAxes: [{
-                    type: "time",
-                    display: false
-                }],
-                yAxes: [{
-                    display: true,
-                    min:0
-                }]}}});
-
-    ch1=new Chart(document.getElementById("chart1").getContext('2d'), {
-        type: 'line',
-        data: {
-            //labels: labels,
-            datasets: [{
+                pointRadius: 4
+            },{
                 label: 'Data',
-                data: batchvalues,
-                borderColor: 'rgb(75, 192, 192)',
+                data: values2,
+                borderColor: 'rgb(74, 1220, 75)',
                 borderWidth: 3,
                 lineTension: 0.35,
-                pointRadius: 2
-            }]},
+                pointRadius: 4
+            }
+            ]},
         options: {
             responsive: true,
             legend: true,
@@ -114,15 +78,16 @@
                 }],
                 yAxes: [{
                     display: true,
-                    min:0
+                    min:0,
+                    max:60,
+                    beginAtZero:true
                 }]}}});
 
     function initialize() {
         charts.push(ch0);
-        charts.push(ch1);
     }
     let msg2="";
-    let tpc="peak";
+    let msg3="";
     let charts = [];
     let samples=10;
     class WebSocketClient {
@@ -153,24 +118,37 @@
 
                 this.webSocket.onmessage = function(event) {
                     let fullmsg = event.data;
-                    if (fullmsg.substring(fullmsg.indexOf(" ")+1,fullmsg.indexOf(" ")+5)===tpc)
-                    {   msg2=fullmsg;
-                    }
+                    if (fullmsg.substring(fullmsg.indexOf(" ")+1,fullmsg.indexOf(" ")+5)==="ardg")
+                    {
+                        msg2=fullmsg;
                     statvalues.push(msg2.substring(0,msg2.indexOf(" ")));
                     values.push({
                         x: new Date(),
                         y: msg2.substring(0,msg2.indexOf(" "))
                     });
                     //console.log('onmessage::' + JSON.stringify(msg2.substring(0,msg2.indexOf(" "))) );
-                    if (values.length>samples) {
+                    if (values.length>30) {
                         statvalues.shift();
                         values.shift();
-                        updateCharts();
                     }
-                    else{
-                        updateCharts();
+                    updateCharts();
                     }
-
+                    else {
+                        {
+                            msg3=fullmsg;
+                            statvalues2.push(msg3.substring(0,msg3.indexOf(" ")));
+                            values2.push({
+                                x: new Date(),
+                                y: msg3.substring(0,msg3.indexOf(" "))
+                            });
+                            //console.log('onmessage::' + JSON.stringify(msg2.substring(0,msg2.indexOf(" "))) );
+                            if (values2.length>20) {
+                                statvalues2.shift();
+                                values2.shift();
+                            }
+                            updateCharts();
+                        }
+                    }
                 }
                 this.webSocket.onclose = function(event) {
                     console.log('onclose::' + JSON.stringify(event, null, 4));
@@ -206,86 +184,36 @@
             }
         }
     }
-    function stats(interval) {
+    const stopButton = document.getElementById("stop");
+    const startButton = document.getElementById("start");
+    function stats(array,element) {
         let total = 0;
         let max ;
         let min ;
         let count=0;
-        for(let i = 0; i < statvalues.length; i++) {
-            max=parseFloat(statvalues[0]);
-            min=parseFloat(statvalues[0]);
-            total += parseFloat(statvalues[i]);
-            count= samples;
-            if (parseFloat(statvalues[i])>max){max=parseFloat(statvalues[i])}
-            if (parseFloat(statvalues[i])<min){min=parseFloat(statvalues[i])}
+        for(let i = 0; i < array.length; i++) {
+            max=parseFloat(array[0]);
+            min=parseFloat(array[0]);
+            total += parseFloat(array[i]);
+            count= array.length;
+            if (parseFloat(array[i])>max){max=parseFloat(array[i])}
+            if (parseFloat(array[i])<min){min=parseFloat(array[i])}
         }
-        let avg = total / statvalues.length;
-        document.getElementById("stats").innerHTML ="average= "+avg+" count= "+count+" max= "+max+" min= "+min;
+        let avg = total / array.length;
+        document.getElementById(element).innerHTML ="average= "+avg+" count= "+count+" max= "+max+" min= "+min;
     }
-
-    let client = new WebSocketClient('ws', 'localhost', 8080, '/SimpleServlet_WAR/socket?push=Stream');
-    //  client.connect();
-
-
-    function ardgBatchRefresh(){
-        ardgBatchFunction();
-        for (var i = 0, len = ardgBatch.length; i < len; i++) {
-            batchvalues.push({
-                x: JSON.stringify(ardgBatch[i]['TIMESTAMP']),
-                y: JSON.stringify(ardgBatch[i]['VALUE'])
-            });
-            updateCharts();
-        }
-        updateCharts();
-    }
-    function peakBatchRefresh(){
-        let date=new Date();
-        peakBatchFunction();
-        for (var i = 0, len = peakBatch.length; i < len; i++) {
-            batchvalues.push({
-                x: JSON.stringify(peakBatch[i]['TIMESTAMP']),
-                y: JSON.stringify(peakBatch[i]['VALUE'])
-            });
-            updateCharts();
-            date=date + 1000;
-        }
-        updateCharts();
-    }
-    const sendButton = document.getElementById("send");
-    const refreshButton = document.getElementById("refresh");
-    const list = document.getElementById("select");
-    const topic = document.getElementById("topic");
-    refreshButton.onclick = function (event) {
-        if (topic.value==="ardg") {
-            ardgBatchRefresh();
-        }
-        else {
-            peakBatchRefresh();
-        }
-    }
-    sendButton.onclick = function (event) {
-        let time=list.value;
+    stopButton.onclick = function (event) {
         client.disconnect();
-        if (topic.value==="ardg"){
-            //samples=(list.value)*1000/200(ms)
-            samples=(time)*5;
-        }
-        else {
-            //samples=(list.value)*1000/300(ms)
-            samples=(time)*3;
-        }
-        setInterval(stats,time*1000);
-        tpc=topic.value;
-        while (values.length>time) {
-            values.shift(); statvalues.shift();
-        }
         updateCharts();
-        client.connect();
     }
-
-    client.connect()
-    //ardgBatchFunction();
-    peakBatchFunction();
+    startButton.onclick = function (event) {
+        client.connect();
+        updateCharts();
+    }
+    let client = new WebSocketClient('ws', 'localhost', 8080, '/SimpleServlet_WAR/socket?push=Stream');
+    client.connect();
+    setInterval( function() { stats(statvalues,"stats"); }, 5000 );
+    setInterval( function() { stats(statvalues2,"stats2"); }, 5000 );
 </script>
 </body>
 </html>

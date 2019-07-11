@@ -1,0 +1,97 @@
+<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Copyright (c) Damak Mahdi.
+  Github.com/damakmahdi
+  damakmahdi2012@gmail.com
+  linkedin.com/in/mahdi-damak-400a3b14a/
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<p id="kmeans"></p>
+<br>
+<br>
+<p id="stats"></p>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.15.1/moment.min.js"></script>
+<script src="https://playground.abysscorp.org/chartjs/livecharts/dist/Chart.min.js"></script>
+<script >
+    class WebSocketClient {
+
+        constructor(protocol, hostname, port, endpoint) {
+
+            this.webSocket = null;
+
+            this.protocol = protocol;
+            this.hostname = hostname;
+            this.port     = port;
+            this.endpoint = endpoint;
+        }
+
+        getServerUrl() {
+            return this.protocol + "://" + this.hostname + ":" + this.port + this.endpoint;
+        }
+        l
+        connect() {
+            try {
+                this.webSocket = new WebSocket(this.getServerUrl());
+                //  WebSocket event handlers!
+                this.webSocket.onopen = function(event) {
+
+                    console.log('onopen::' + JSON.stringify(event, null, 4));
+                }
+
+                this.webSocket.onmessage = function(event) {
+                    let msg=event.data;
+                    if (msg.substring(0,6)==="kmeans"){
+                        console.log(msg);
+                        document.getElementById("kmeans").innerHTML =msg;
+                    }
+                    if (msg.substring(0,5)==="stats"){
+                        console.log(msg);
+                        document.getElementById("stats").innerHTML =msg;
+                    }
+                    }
+                this.webSocket.onclose = function(event) {
+                    console.log('onclose::' + JSON.stringify(event, null, 4));
+                }
+                this.webSocket.onerror = function(event) {
+                    console.log('onerror::' + JSON.stringify(event, null, 4));
+                }
+
+            } catch (exception) {
+
+                console.error(exception);
+            }
+        }
+
+        getStatus() {
+            return this.webSocket.readyState;
+        }
+        send(message) {
+
+            if (this.webSocket.readyState === WebSocket.OPEN) {
+                this.webSocket.send(message);
+
+            } else {
+                console.error('webSocket is not open. readyState=' + this.webSocket.readyState);
+            }
+        }
+        disconnect() {
+            if (this.webSocket.readyState === WebSocket.OPEN) {
+                this.webSocket.close();
+
+            } else {
+                console.error('webSocket is not open. readyState=' + this.webSocket.readyState);
+            }
+        }
+    }
+    let client = new WebSocketClient('ws', 'localhost', 8080, '/SimpleServlet_WAR/socket?push=Stream');
+    client.connect()
+</script>
+</body>
+</html>

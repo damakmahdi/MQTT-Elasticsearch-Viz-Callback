@@ -16,55 +16,36 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+
 /*
-Peaktech Data sending web service
+Ardgetti Data sending web service
  */
-public class PeaktechData extends RetrieveServlet {
-    RetrieveMeasures r ;
+public class ArdgettiBatch extends RetrieveServlet {
+    RetrieveMeasures r;
     public Gson g;
     public long borneInf;
     public long borneSup;
+
     @Override
     public void init() throws ServletException {
         super.init();
-        this.r=new RetrieveMeasures();
-        this.g=new Gson();
-        borneInf= System.currentTimeMillis()-5000;
-        borneSup= System.currentTimeMillis();
+        this.r = new RetrieveMeasures();
+        this.g = new Gson();
 
     }
 
-    /*
-GET request returns getPeakList which is a list that contains the Peaktech logs
- */
-    /*
     @Override
     public void doGet(HttpServletRequest req, HttpServletResponse res)
-            throws ServletException, IOException
-    {
-        r= new RetrieveMeasures();
-        this.r.retrieveData("peaktechpower",r.peakList);
+            throws ServletException, IOException {
+
+        this.r.perfectRetrieve("addd", r.ardgList, System.currentTimeMillis() - 10000, System.currentTimeMillis());
         res.setContentType("application/json");
-
-        this.doWrite(r.getPeakList(),res.getWriter()); }
-
-     */
-    @Override
-    public void doGet(HttpServletRequest req, HttpServletResponse res)
-            throws ServletException, IOException
-    {
-
-        this.r.perfectRetrieve("pkkk",r.peakList,this.borneInf,this.borneSup);
-        res.setContentType("application/json");
-        if(r.getPeakList().size()>0){
-            this.doWrite(r.getPeakList(), res.getWriter());
-       this.doWrite(r.stats, res.getWriter());
-            this.borneInf= System.currentTimeMillis()-5000;
-            this.borneSup= System.currentTimeMillis();
+        if (r.getArdgList().size() > 0) {
+            this.doWrite(r.getArdgList(), res.getWriter());
         } else {
             /*
             try {
-                MailTest.generateAndSendEmail();
+              /  MailTest.generateAndSendEmail();
                 //System.exit(0);
 
             } catch (MessagingException e) {

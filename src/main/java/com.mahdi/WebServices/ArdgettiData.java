@@ -9,10 +9,8 @@ package com.mahdi.WebServices;
 
 import com.google.gson.Gson;
 import com.mahdi.ElasticQueries.RetrieveMeasures;
-import com.mahdi.Listeners.MailTest;
 import com.mahdi.Servlets.RetrieveServlet;
 
-import javax.mail.MessagingException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -37,31 +35,12 @@ public class ArdgettiData extends RetrieveServlet {
         borneSup = System.currentTimeMillis();
 
     }
-/*
-GET request returns getArdgList which is a list that contains the Ardgetti logs
- */
-
-/*
-    @Override
-    public void doGet(HttpServletRequest req, HttpServletResponse res)
-            throws ServletException, IOException
-    {
-
-        r= new RetrieveMeasures();
-        this.r.retrieveData("ardgettipower",r.ardgList);
-        res.setContentType("application/json");
-
-        this.doWrite(r.getArdgList(),res.getWriter());
-    }
-
- */
-
 
     @Override
     public void doGet(HttpServletRequest req, HttpServletResponse res)
             throws ServletException, IOException {
 
-        this.r.perfectRetrieve("ardgettipower", r.ardgList, this.borneInf, this.borneSup);
+        this.r.perfectRetrieve("addd", r.ardgList, this.borneInf, this.borneSup);
         res.setContentType("application/json");
         if (r.getArdgList().size() > 0) {
             this.doWrite(r.getArdgList(), res.getWriter());
@@ -70,12 +49,15 @@ GET request returns getArdgList which is a list that contains the Ardgetti logs
             this.borneSup = System.currentTimeMillis();
         }
          else {
+             /*
             try {
                 MailTest.generateAndSendEmail();
                 //System.exit(0);
             } catch (MessagingException e) {
                 e.printStackTrace();
             }
+
+              */
         }
 
 

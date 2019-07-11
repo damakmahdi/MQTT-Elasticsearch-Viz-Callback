@@ -33,6 +33,6 @@ peakDataFunction = function () {
             ;
         }
     };
-    xmlhttp.open("GET", "/SimpleServlet_war/peakData", true);
+    xmlhttp.open("GET", "/SimpleServlet_WAR/peakData", true);
     xmlhttp.send();};
 

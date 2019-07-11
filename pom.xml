@@ -49,7 +49,17 @@
       <version>2.4</version>
 
     </dependency>
-
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-streaming_2.11</artifactId>
+      <version>2.4.3</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-streaming-mqtt_2.11</artifactId>
+      <version>1.6.3</version>
+    </dependency>
       <dependency>
           <groupId>org.elasticsearch.client</groupId>
           <artifactId>elasticsearch-rest-high-level-client</artifactId>
@@ -82,8 +92,57 @@
       <artifactId>tyrus-standalone-client</artifactId>
       <version>1.15</version>
     </dependency>
-
-
+      <dependency>
+          <groupId>org.elasticsearch</groupId>
+          <artifactId>elasticsearch-hadoop</artifactId>
+          <version>7.0.0</version>
+      </dependency>
+    <dependency>
+      <groupId>com.github.signaflo</groupId>
+      <artifactId>timeseries</artifactId>
+      <version>0.4</version>
+    </dependency>
+    <dependency>
+      <groupId>com.workday</groupId>
+      <artifactId>timeseries-forecast</artifactId>
+      <version>1.1.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-streaming-mqtt-assembly_2.11</artifactId>
+      <version>1.6.3</version>
+    </dependency>
+    <dependency>
+      <groupId>org.elasticsearch.client</groupId>
+      <artifactId>elasticsearch-rest-high-level-client</artifactId>
+      <version>7.0.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-core_2.11</artifactId>
+      <version>2.4.3</version>
+    </dependency>
+    <dependency>
+      <groupId>org.elasticsearch</groupId>
+      <artifactId>elasticsearch-spark-20_2.11</artifactId>
+      <version>7.0.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-mllib_2.11</artifactId>
+      <version>2.4.3</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-mllib-local_2.11</artifactId>
+      <version>2.4.3</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-mllib_2.11</artifactId>
+      <version>2.4.3</version>
+    </dependency>
 
 
   </dependencies>

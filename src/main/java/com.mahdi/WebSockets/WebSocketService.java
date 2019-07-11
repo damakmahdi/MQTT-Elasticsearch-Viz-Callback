@@ -6,16 +6,18 @@
  **********************************************************************************************************************/
 
 package com.mahdi.WebSockets;
-
+import org.apache.spark.streaming.api.java.JavaStreamingContext;
 import javax.websocket.Session;
 import java.util.HashMap;
 import java.util.Map;
-public class WebSocketService implements Runnable {
+public class WebSocketService  implements Runnable   {
 
     private static WebSocketService instance;
     private static Map<String, Session> sessions = new HashMap<>();
+    private JavaStreamingContext jssc = null;
 
-//Singleton
+
+    //Singleton
     public static void initialize() {
         if (instance == null) {
             instance = new WebSocketService();
@@ -25,10 +27,11 @@ public class WebSocketService implements Runnable {
 
     public static void add(Session s)
     {
+
         sessions.put(s.getId(), s);
     }
 
-    public void run(String message) {
+    public void runs(String message) {
 
             try {
 
@@ -37,7 +40,7 @@ public class WebSocketService implements Runnable {
                     Session s = sessions.get(key);
 
                     if (s.isOpen()) {
-                        s.getBasicRemote().sendText(message+" session "+s.toString()+" "+s.getId());
+                        s.getBasicRemote().sendText(message);
                     } else {
                         sessions.remove(key);
                     }
@@ -48,7 +51,9 @@ public class WebSocketService implements Runnable {
     }
 
     @Override
-    public void run() {
+    public void run()  {
+    }
 
+    public static void main(String[] args)  throws InterruptedException{
     }
 }
